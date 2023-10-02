@@ -1,6 +1,6 @@
 const router = require('express').Router();
 
-const { createItem } = require('../controllers/clothingItems');
+const { createItem } = require('../controllers/clothingItem');
 
 //CRUD
 
