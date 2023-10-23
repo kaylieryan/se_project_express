@@ -1,7 +1,7 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const helmet = require("helmet");
-const limiter = require("./models/middlewares/rateLimiter");
+const limiter = require("./middlewares/rateLimiter");
 
 const app = express();
 
