@@ -1,7 +1,42 @@
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
 const User = require("../models/user");
+const { JWT_SECRET } = require("../utils/config");
 const { serverError, invalidData, notFound } = require("../utils/errors");
 
-module.exports.getUsers = (req, res) => {
+const createUser = async (req, res) => {
+  const { name, email, password, avatar } = req.body;
+
+  // Check if user with email already exists
+  const existingUser = await User.findOne({ email });
+  if (existingUser) {
+    return res.status(400).json({ message: "Email already in use" });
+  }
+
+  // Hash password
+  const salt = await bcrypt.genSalt();
+  const hashedPassword = await bcrypt.hash(password, salt);
+
+  const user = new User({
+    name,
+    email,
+    password: hashedPassword,
+    avatar,
+  });
+
+  try {
+    const newUser = await user.save();
+    res.status(201).json(newUser);
+  } catch (err) {
+    if (err.code === 11000) {
+      res.status(400).json({ message: "Email already in use" });
+    } else {
+      res.status(500).json({ message: err.message });
+    }
+  }
+};
+
+const getUsers = (req, res) => {
   User.find({})
     .then((user) => res.send({ data: user }))
     .catch(() =>
@@ -11,7 +46,7 @@ module.exports.getUsers = (req, res) => {
     );
 };
 
-module.exports.getUserById = (req, res) => {
+const getUserById = (req, res) => {
   User.findById(req.params.userId)
     .orFail()
     .then((user) => res.send({ data: user }))
@@ -31,17 +66,22 @@ module.exports.getUserById = (req, res) => {
     });
 };
 
-module.exports.createUser = (req, res) => {
-  const { name, avatar } = req.body;
+const login = async(req, res) => {
+  const { email, password } = req.body;
 
-  User.create({ name, avatar })
-    .then((user) => res.send({ data: user }))
-    .catch((err) => {
-      if (err.name === "ValidationError") {
-        return res.status(invalidData).send({ message: `data not valid` });
-      }
-      return res
-        .status(serverError)
-        .send({ message: `There has been a server error ` });
-    });
+  // Find user by email
+  const user = await User.findUserByCredentials(email, password);
+
+  if (!user) {
+    return res.status(401).json({ message: "Invalid credentials" });
+  }
+
+  // Create JWT
+  const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
+    expiresIn: "7d",
+  });
+
+  res.json({ token });
 };
+
+module.exports = { createUser, getUsers, getUserById, login };
