@@ -22,11 +22,14 @@ app.use((req, res, next) => {
   next();
 });
 
+app.use("/users", require("./routes/user"));
+app.use("/items", require("./routes/clothingItem"));
+
+const auth = require("./middlewares/auth");
+
 app.post("/signin", login);
 app.post("/signup", createUser);
 
-app.use("/users", require("./routes/user"));
-app.use("/items", require("./routes/clothingItem"));
 
 app.use(handleNonExistentRoute);
 
