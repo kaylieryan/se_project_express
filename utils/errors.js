@@ -1,9 +1,9 @@
-const BAD_REQUEST = 400;
-const UNAUTHORIZED = 401;
-const FORBIDDEN = 403;
-const NOT_FOUND = 404;
-const DUPLICATE = 409;
-const DEFAULT_ERROR = 500;
+const notFound = 404;
+const serverError = 500;
+const invalidData = 400;
+const forbiddenError = 403;
+const authError = 401;
+const conflictError = 409;
 
 function handleNonExistentRoute(req, res) {
   res.status(404).send({
@@ -13,10 +13,10 @@ function handleNonExistentRoute(req, res) {
 
 module.exports = {
   handleNonExistentRoute,
-  BAD_REQUEST,
-  UNAUTHORIZED,
-  FORBIDDEN,
-  NOT_FOUND,
-  DEFAULT_ERROR,
-  DUPLICATE,
+  notFound,
+  serverError,
+  invalidData,
+  forbiddenError,
+  authError,
+  conflictError,
 };
