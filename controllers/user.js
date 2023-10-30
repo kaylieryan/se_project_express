@@ -2,7 +2,8 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const User = require("../models/user");
 const { JWT_SECRET } = require("../utils/config");
-const { serverError, invalidData, notFound } = require("../utils/errors");
+//const User = require("../models/user");
+const { serverError, invalidData, notFound, authError } = require("../utils/errors");
 
 const createUser = async (req, res) => {
   const { name, email, password, avatar } = req.body;
@@ -66,35 +67,115 @@ const getUserById = (req, res) => {
     });
 };
 
-const getCurrentUser = async (req, res) => {
-  try {
-    const user = await User.findById(req.user._id);
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-    res.json(user);
-  } catch (err) {
-    res.status(500).json({ message: `There has been a server error` });
-  }
+const getCurrentUser = (req, res) => {
+  const { _id } = req.user;
+
+  User.findOne({ _id })
+    .then((user) => {
+      if (!user) {
+        return res.status(notFound).send({ message: "user not found" });
+      }
+      return res.send({ data: user });
+    })
+    .catch((err) => {
+      if (err.name === "CastError") {
+        return res.status(invalidData).send({ message: "Invalid ID" });
+      }
+      if (err.name === "DocumentNotFoundError") {
+        return res.status(notFound).send({ message: "Document not found" });
+      }
+      return res
+        .status(serverError)
+        .send({ message: `There has been a server error ` });
+    });
 };
 
-const login = async (req, res) => {
+const updateProfile = (req, res) => {
+  const { avatar, name } = req.body;
+  const { _id } = req.user;
+
+  User.findOneAndUpdate(
+    { _id },
+    { avatar, name },
+    { new: true, runValidators: true }
+  )
+    .then((user) => {
+      if (!user) {
+        return res.status(notFound).send({ message: "user not found" });
+      }
+      return res.send({ data: user });
+    })
+    .catch((err) => {
+      if (err.name === "ValidationError") {
+        return res.status(invalidData).send({ message: `data not valid` });
+      }
+      if (err.name === "CastError") {
+        return res.status(invalidData).send({ message: "Invalid ID" });
+      }
+      if (err.name === "DocumentNotFoundError") {
+        return res.status(notFound).send({ message: "Document not found" });
+      }
+      return res.status(serverError).send({ message: "server error" });
+    });
+};
+
+const login = (req, res) => {
   const { email, password } = req.body;
 
-  // Find user by email
-  const user = await User.findUserByCredentials(email, password);
+  return User.findUserByCredentials(email, password)
+    .then((user) => {
+      const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
+        expiresIn: "7d",
+      });
+      res.send({ token });
+    })
+    .catch((err) => {
+      if (err.message === "incorrect email or password") {
+        return res
+          .status(authError)
+          .send({ message: "incorrect email or password" });
+      }
+      return res
+        .status(serverError)
+        .send({ message: `There has been a server error ` });
+    });
+};
 
-  if (!user) {
-    return res.status(401).json({ message: "Invalid credentials" });
-  }
+
+// const login = async (req, res) => {
+//   const { email, password } = req.body;
+
+//   // Find user by email
+//   const user = await User.findUserByCredentials(email, password);
+
+//   if (!user) {
+//     return res.status(401).json({ message: "Invalid credentials" });
+//   }
 
   // Create JWT
-  const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
-    expiresIn: "7d",
-  });
+//   const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
+//     expiresIn: "7d",
+//   });
 
-  res.json({ token });
-};
+//   res.json({ token });
+// };
+
+// const updateProfile = (req, res) => {
+//   const { name, avatar } = req.body;
+//   const { _id } = req.user._id;
+
+//   User.findByIdAndUpdate(
+//     { _id },
+//     { $set: { name, avatar } },
+//     { new: true, runValidators: true }
+//   )
+//   .orFail()
+//   .then((user) => res.send({ data: user }))
+//   .catch((err) => {
+//     console.error(err);
+//     if (err.name === "ValidationError") {
+//       return res.status(invalidData).send({ message: `data not valid` });
+//     }
 
 module.exports = {
   createUser,
@@ -102,4 +183,5 @@ module.exports = {
   getUserById,
   login,
   getCurrentUser,
+  updateProfile
 };
