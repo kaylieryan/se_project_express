@@ -1,8 +1,8 @@
 const mongoose = require("mongoose");
 const validator = require("validator");
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 
-const user = new mongoose.Schema({
+const userSchema = new mongoose.Schema({
   name: {
     type: String,
     required: true,
@@ -20,23 +20,90 @@ const user = new mongoose.Schema({
     },
   },
   email: {
-    type: String,
     required: true,
-    unique: true,
-    lowercase: true,
+    type: String,
     validate: {
       validator(email) {
         return validator.isEmail(email);
       },
       message: "Please enter a valid email",
     },
+    unique: true,
   },
   password: {
-    type: String,
     required: true,
-    minlength: 8,
+    type: String,
     select: false,
   },
 });
 
-module.exports = mongoose.model("user", user);
+userSchema.statics.findUserByCredentials = function findUserByCredentials(
+  email,
+  password
+) {
+  let foundUser;
+  return this.findOne({ email })
+
+    .select("+password")
+    .then((user) => {
+      if (!user) {
+        return Promise.reject(new Error("incorrect email or password"));
+      }
+      if (!password) {
+        return Promise.reject(new Error("incorrect email or password"));
+      }
+      foundUser = user;
+      return bcrypt.compare(password, user.password);
+    })
+    .then((matched) => {
+      if (!matched) {
+        return Promise.reject(new Error("incorrect email or password"));
+      }
+      return foundUser;
+    });
+};
+
+module.exports = mongoose.model("user", userSchema);
+
+// const mongoose = require("mongoose");
+// const validator = require("validator");
+// const bcrypt = require("bcrypt");
+
+// const user = new mongoose.Schema({
+//   name: {
+//     type: String,
+//     required: true,
+//     minlength: 2,
+//     maxlength: 30,
+//   },
+//   avatar: {
+//     required: true,
+//     type: String,
+//     validate: {
+//       validator(url) {
+//         return validator.isURL(url);
+//       },
+//       message: "Please enter a valid url",
+//     },
+//   },
+//   email: {
+//     type: String,
+//     required: true,
+//     unique: true,
+//     lowercase: true,
+//     validate: {
+//       validator(email) {
+//         return validator.isEmail(email);
+//       },
+//       message: "Please enter a valid email",
+//     },
+//   },
+//   password: {
+//     type: String,
+//     required: true,
+//     minlength: 8,
+//     select: false,
+//   },
+// });
+
+// module.exports = mongoose.model("user", user);

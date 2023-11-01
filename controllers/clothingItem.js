@@ -1,7 +1,12 @@
 const ClothingItem = require("../models/clothingItem");
-const { serverError, invalidData, notFound } = require("../utils/errors");
+const {
+  serverError,
+  invalidData,
+  notFound,
+  forbiddenError,
+} = require("../utils/errors");
 
-module.exports.getClothingItems = (req, res) => {
+const getClothingItems = (req, res) => {
   ClothingItem.find({})
     .populate("owner")
     .then((clothingItem) => res.send({ data: clothingItem }))
@@ -10,7 +15,7 @@ module.exports.getClothingItems = (req, res) => {
     );
 };
 
-module.exports.createClothingItem = (req, res) => {
+const createClothingItem = (req, res) => {
   const { name, weather, imageUrl } = req.body;
   const owner = req.user._id;
 
@@ -31,12 +36,20 @@ module.exports.createClothingItem = (req, res) => {
     });
 };
 
-module.exports.deleteClothingItem = (req, res) => {
+const deleteClothingItem = (req, res) => {
   const { itemId } = req.params;
+  const { _id } = req.user;
 
-  ClothingItem.findByIdAndDelete(itemId)
+  ClothingItem.findById(itemId)
     .orFail()
-    .then(() => res.send({ message: `item was deleted successfully` }))
+    .then((clothingItem) => {
+      if (clothingItem.owner.toString() !== _id.toString()) {
+        return res.status(forbiddenError).send({ message: "permission error" });
+      }
+      return ClothingItem.findByIdAndDelete(itemId).then(() =>
+        res.send({ message: "item was deleted successfully" })
+      );
+    })
     .catch((err) => {
       if (err.name === "DocumentNotFoundError") {
         return res.status(notFound).send({ message: "Document not found" });
@@ -50,7 +63,7 @@ module.exports.deleteClothingItem = (req, res) => {
     });
 };
 
-module.exports.likeClothingItem = (req, res) => {
+const likeClothingItem = (req, res) => {
   ClothingItem.findByIdAndUpdate(
     req.params.itemId,
     { $addToSet: { likes: req.user._id } },
@@ -78,7 +91,7 @@ module.exports.likeClothingItem = (req, res) => {
     });
 };
 
-module.exports.unlikeClothingItem = (req, res) => {
+const unlikeClothingItem = (req, res) => {
   ClothingItem.findByIdAndUpdate(
     req.params.itemId,
     { $pull: { likes: req.user._id } },
@@ -100,3 +113,11 @@ module.exports.unlikeClothingItem = (req, res) => {
         .send({ message: `There has been a server error: ${err.message} ` });
     });
 };
+
+module.exports = {
+  getClothingItems,
+  createClothingItem,
+  deleteClothingItem,
+  likeClothingItem,
+  unlikeClothingItem,
+}
