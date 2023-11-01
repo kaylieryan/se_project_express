@@ -97,6 +97,7 @@ const login = (req, res) => {
         expiresIn: "7d",
       });
       res.send({ token });
+      res.status(200).send({ message: "logged in" });
     })
     .catch((err) => {
       if (err.message === "incorrect email or password") {
