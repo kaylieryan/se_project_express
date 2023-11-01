@@ -6,7 +6,7 @@ const authError = 401;
 const conflictError = 409;
 
 function handleNonExistentRoute(req, res) {
-  res.status(404).send({
+  res.status(notFound).send({
     message: "Requested resource not found",
   });
 }
