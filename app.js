@@ -16,6 +16,8 @@ mongoose.connect("mongodb://127.0.0.1:27017/wtwr_db");
 app.use(helmet());
 app.use(express.json());
 
+app.use(limiter);
+
 app.use(cors());
 
 app.use("/users", require("./routes/user"));
@@ -26,7 +28,7 @@ app.post("/signup", createUser);
 
 app.use(handleNonExistentRoute);
 
-app.use(limiter);
+
 
 app.listen(PORT, () => {
   console.log("Port is running");
