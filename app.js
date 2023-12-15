@@ -28,8 +28,6 @@ app.post("/signup", createUser);
 
 app.use(handleNonExistentRoute);
 
-
-
 app.listen(PORT, () => {
   console.log("Port is running");
 });
