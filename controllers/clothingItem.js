@@ -7,15 +7,21 @@ const {
 } = require("../utils/errors");
 
 const getClothingItems = (req, res) => {
+  console.log("Getting clothing items.");
   ClothingItem.find({})
     .populate("owner")
-    .then((clothingItem) => res.send({ data: clothingItem }))
+    .then((clothingItem) => {
+      console.log("Got clothing item.");
+      console.log(clothingItem);
+      res.send({ data: clothingItem });
+    })
     .catch(() =>
       res.status(serverError).send({ message: `There has been a server error` })
     );
 };
 
 const createClothingItem = (req, res) => {
+  console.log("creating clothing item.");
   const { name, weather, imageUrl } = req.body;
   const owner = req.user._id;
 
