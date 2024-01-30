@@ -1,5 +1,4 @@
 const router = require("express").Router();
-//const userAuth = require("../middlewares/auth");
 
 const {
   getClothingItems,
