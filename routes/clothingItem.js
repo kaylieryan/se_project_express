@@ -9,10 +9,9 @@ const {
   unlikeClothingItem,
 } = require("../controllers/clothingItem");
 
-router.get("/", getClothingItems);
-
 router.use(userAuth);
 
+router.get("/", getClothingItems);
 router.post("/", userAuth, createClothingItem);
 router.put("/:itemId/likes", userAuth, likeClothingItem);
 router.delete("/:itemId", userAuth, deleteClothingItem);
