@@ -51,30 +51,18 @@ const createUser = (req, res) => {
 };
 
 const login = (req, res) => {
-  const { email, password } = req.body;
-
-  if (!email || !password) {
-    return res
-      .status(authError)
-      .send({ message: "email or password is missing" });
-  }
-
-  return User.findUserByCredentials(email, password)
-    .then((user) => {
-      const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
+  User.findUserByCredentials(req.body.email, req.body.JWT_SECRETpassword)
+    .then((data) => {
+      const token = jwt.sign({ _id: data._id }, JWT_SECRET, {
         expiresIn: "7d",
       });
       res.send({ token });
     })
-    .catch((err) => {
-      if (err.message === "incorrect email or password") {
-        return res
-          .status(authError)
-          .send({ message: "incorrect email or password" });
+    .catch((error) => {
+      if (error.message === "Incorrect email or password") {
+        return res.status(authError).send({ message: "Invalid login" });
       }
-      return res
-        .status(serverError)
-        .send({ message: `There has been a server error ` });
+      return res.status(serverError).send({ message: "server error" });
     });
 };
 

@@ -1,8 +1,8 @@
 const notFound = 404;
 const serverError = 500;
 const invalidData = 400;
-const forbiddenError = 403;
 const authError = 401;
+const forbiddenError = 403;
 const conflictError = 409;
 
 function handleNonExistentRoute(req, res) {

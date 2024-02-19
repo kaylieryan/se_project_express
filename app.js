@@ -11,11 +11,12 @@ const { handleNonExistentRoute } = require("./utils/errors");
 
 const { login, createUser } = require("./controllers/user");
 
-mongoose.connect("mongodb://127.0.0.1:27017/wtwr_db",
+mongoose.connect(
+  "mongodb://127.0.0.1:27017/wtwr_db",
   (r) => {
     console.log("connected to db", r);
   },
-  (e) => console.log("db error", e),
+  (e) => console.log("db error", e)
 );
 
 app.use(helmet());
