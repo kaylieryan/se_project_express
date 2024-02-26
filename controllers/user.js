@@ -62,6 +62,7 @@ const login = (req, res) => {
     })
     .catch((error) => {
       if (error.message === "incorrect email or password") {
+        console.log(error);
         return res.status(authError).send({ message: "Invalid login" });
       }
       console.log(error);
@@ -90,8 +91,11 @@ const getCurrentUser = (req, res) => {
 };
 
 const editCurrentUser = (req, res) => {
-  const { avatar, name } = req.body;
+  const {
+    name: { name, avatar },
+  } = req.body;
   const { _id } = req.user;
+  console.log("editCurrentUser controller", _id, avatar, name);
 
   User.findOneAndUpdate(
     { _id },
@@ -105,6 +109,7 @@ const editCurrentUser = (req, res) => {
       return res.send({ data: user });
     })
     .catch((err) => {
+      console.log(err);
       if (err.name === "ValidationError") {
         return res.status(invalidData).send({ message: `data not valid` });
       }
