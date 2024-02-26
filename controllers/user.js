@@ -51,7 +51,9 @@ const createUser = (req, res) => {
 };
 
 const login = (req, res) => {
-  User.findUserByCredentials(req.body.email, req.body.JWT_SECRETpassword)
+  console.log("Calling login");
+  console.log(req.body);
+  User.findUserByCredentials(req.body.email, req.body.password)
     .then((data) => {
       const token = jwt.sign({ _id: data._id }, JWT_SECRET, {
         expiresIn: "7d",
@@ -59,9 +61,10 @@ const login = (req, res) => {
       res.send({ token });
     })
     .catch((error) => {
-      if (error.message === "Incorrect email or password") {
+      if (error.message === "incorrect email or password") {
         return res.status(authError).send({ message: "Invalid login" });
       }
+      console.log(error);
       return res.status(serverError).send({ message: "server error" });
     });
 };
@@ -114,6 +117,17 @@ const editCurrentUser = (req, res) => {
       return res.status(serverError).send({ message: "server error" });
     });
 };
+//         return res.status(invalidData).send({ message: `data not valid` });
+//       }
+//       if (err.name === "CastError") {
+//         return res.status(invalidData).send({ message: "Invalid ID" });
+//       }
+//       if (err.name === "DocumentNotFoundError") {
+//         return res.status(notFound).send({ message: "Document not found" });
+//       }
+//       return res.status(serverError).send({ message: "server error" });
+//     });
+// };
 
 module.exports = {
   createUser,
