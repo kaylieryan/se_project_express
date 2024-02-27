@@ -91,9 +91,7 @@ const getCurrentUser = (req, res) => {
 };
 
 const editCurrentUser = (req, res) => {
-  const {
-    name: { name, avatar },
-  } = req.body;
+  const { name, avatar } = req.body;
   const { _id } = req.user;
   console.log("editCurrentUser controller", _id, avatar, name);
 
