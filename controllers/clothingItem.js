@@ -6,19 +6,15 @@ const {
   forbiddenError,
 } = require("../utils/errors");
 
-const getClothingItems = (req, res) => {
-  console.log("Getting clothing items.");
+function getClothingItems(req, res, next) {
   ClothingItem.find({})
-    .populate("owner")
     .then((clothingItem) => {
-      console.log("Got clothing item.");
-      console.log(clothingItem);
-      res.send({ data: clothingItem });
+      res.status(200).send({ data: clothingItem });
     })
-    .catch(() =>
-      res.status(serverError).send({ message: `There has been a server error` })
-    );
-};
+    .catch((err) => {
+      next(err);
+    });
+}
 
 const createClothingItem = (req, res) => {
   console.log("creating clothing item.");
@@ -42,18 +38,44 @@ const createClothingItem = (req, res) => {
     });
 };
 
-const deleteClothingItem = (req, res) => {
+// const deleteClothingItem = (req, res) => {
+//   const { itemId } = req.params;
+//   const { _id } = req.user;
+
+//   ClothingItem.findById(itemId)
+//     .orFail()
+//     .then((clothingItem) => {
+//       if (clothingItem.owner.toString() !== _id.toString()) {
+//         return res.status(forbiddenError).send({ message: "permission error" });
+//       }
+//       return ClothingItem.findByIdAndDelete(itemId).then(() =>
+//         res.send({ message: "item was deleted successfully" })
+//       );
+//     })
+//     .catch((err) => {
+//       if (err.name === "DocumentNotFoundError") {
+//         return res.status(notFound).send({ message: "Document not found" });
+//       }
+//       if (err.name === "CastError") {
+//         return res.status(invalidData).send({ message: "Invalid ID" });
+//       }
+//       return res
+//         .status(serverError)
+//         .send({ message: `There has been a server error ` });
+//     });
+// };
+
+const deleteClothingItem = (req, res, next) => {
   const { itemId } = req.params;
-  const { _id } = req.user;
 
   ClothingItem.findById(itemId)
     .orFail()
     .then((clothingItem) => {
-      if (clothingItem.owner.toString() !== _id.toString()) {
-        return res.status(forbiddenError).send({ message: "permission error" });
+      if (String(clothingItem.owner) !== req.user._id) {
+        return res.status(forbiddenError).send({ message: "Forbidden" });
       }
-      return ClothingItem.findByIdAndDelete(itemId).then(() =>
-        res.send({ message: "item was deleted successfully" })
+      ClothingItem.findByIdAndDelete(clothingItem._id).then(() =>
+        res.status(200).send({ message: "item was deleted successfully" })
       );
     })
     .catch((err) => {
@@ -63,9 +85,7 @@ const deleteClothingItem = (req, res) => {
       if (err.name === "CastError") {
         return res.status(invalidData).send({ message: "Invalid ID" });
       }
-      return res
-        .status(serverError)
-        .send({ message: `There has been a server error ` });
+      next(err);
     });
 };
 
