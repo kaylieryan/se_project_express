@@ -17,57 +17,49 @@ function getClothingItems(req, res, next) {
     });
 }
 
-const createClothingItem = (req, res, next) => {
+const createClothingItem = (req, res) => {
   console.log("creating clothing item.");
   const { name, weather, imageUrl } = req.body;
   const owner = req.user._id;
 
-  ClothingItem.create({ name, weather, imageUrl, owner })
+  if (!name || !weather || !imageUrl) {
+    return res.status(invalidData).send({ message: "Invalid data" });
+  }
+
+  if (typeof name !== "string" || typeof weather !== "string") {
+    return res.status(invalidData).send({ message: "Invalid data" });
+  }
+
+  return ClothingItem.create({ name, weather, imageUrl, owner })
     .then((item) => {
       res.status(200).send({ data: item });
     })
     .catch((err) => {
       if (err.name === "ValidationError") {
-        next(invalidData("Invalid data"));
+        return res.status(invalidData).send({ message: "Invalid data" });
       }
-      next(err);
+      return res.status(serverError).send({ message: "Server error" });
     });
 };
 
-//   if (err.name === "ValidationError") {
-//     return res
-//       .status(invalidData)
-//       .send({ message: `this data is not valid` });
-//   }
-//   if (err.name === "CastError") {
-//     return res.status(invalidData).send({ message: "Invalid ID format" });
-//   }
-//   return res
-//     .status(serverError)
-//     .send({ message: `There has been a server error` });
-// });
-
-const deleteClothingItem = (req, res, next) => {
+const deleteClothingItem = (req, res) => {
+  const userId = req.user._id;
   const { itemId } = req.params;
-
   ClothingItem.findById(itemId)
-    .orFail()
-    .then((clothingItem) => {
-      if (String(clothingItem.owner) !== req.user._id) {
-        return res.status(forbiddenError).send({ message: "Forbidden" });
+    .then((item) => {
+      if (!item) {
+        return res.status(notFound).send({ message: "Item not found" });
       }
-      ClothingItem.findByIdAndDelete(clothingItem._id).then(() =>
-        res.status(200).send({ message: "item was deleted successfully" })
-      );
+      if (!item.owner.equals(userId)) {
+        return res.status(forbiddenError).send({ message: "Unauthorized" });
+      }
+      return ClothingItem.findByIdAndDelete(itemId);
     })
     .catch((err) => {
-      if (err.name === "DocumentNotFoundError") {
-        return res.status(notFound).send({ message: "Document not found" });
-      }
       if (err.name === "CastError") {
         return res.status(invalidData).send({ message: "Invalid ID" });
       }
-      next(err);
+      return res.status(serverError).send({ message: "Server error" });
     });
 };
 
