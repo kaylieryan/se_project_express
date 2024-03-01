@@ -120,17 +120,6 @@ const editCurrentUser = (req, res) => {
       return res.status(serverError).send({ message: "server error" });
     });
 };
-//         return res.status(invalidData).send({ message: `data not valid` });
-//       }
-//       if (err.name === "CastError") {
-//         return res.status(invalidData).send({ message: "Invalid ID" });
-//       }
-//       if (err.name === "DocumentNotFoundError") {
-//         return res.status(notFound).send({ message: "Document not found" });
-//       }
-//       return res.status(serverError).send({ message: "server error" });
-//     });
-// };
 
 module.exports = {
   createUser,
