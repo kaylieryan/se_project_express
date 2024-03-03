@@ -45,7 +45,7 @@ const createClothingItem = (req, res) => {
 const deleteClothingItem = (req, res) => {
   const userId = req.user._id;
   const { itemId } = req.params;
-  ClothingItem.findById(itemId)
+  return ClothingItem.findById(itemId)
     .then((item) => {
       if (!item) {
         return res.status(notFound).send({ message: "Item not found" });
@@ -53,7 +53,9 @@ const deleteClothingItem = (req, res) => {
       if (!item.owner.equals(userId)) {
         return res.status(forbiddenError).send({ message: "Unauthorized" });
       }
-      return ClothingItem.findByIdAndDelete(itemId);
+      return ClothingItem.findByIdAndDelete(itemId).then((deletedItem) => {
+        res.send({ data: deletedItem });
+      });
     })
     .catch((err) => {
       if (err.name === "CastError") {
