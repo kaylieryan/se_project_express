@@ -42,16 +42,16 @@ const createClothingItem = (req, res) => {
     });
 };
 
-const deleteClothingItem = (req, res) => {
+const deleteClothingItem = (req, res, next) => {
   const userId = req.user._id;
   const { itemId } = req.params;
   return ClothingItem.findById(itemId)
     .then((item) => {
       if (!item) {
-        return res.status(notFound).send({ message: "Item not found" });
+        return next({ status: notFound, message: "Item not found" });
       }
       if (!item.owner.equals(userId)) {
-        return res.status(forbiddenError).send({ message: "Unauthorized" });
+        return next({ status: forbiddenError, message: "Unauthorized" });
       }
       return ClothingItem.findByIdAndDelete(itemId).then((deletedItem) => {
         res.send({ data: deletedItem });
@@ -59,11 +59,27 @@ const deleteClothingItem = (req, res) => {
     })
     .catch((err) => {
       if (err.name === "CastError") {
-        return res.status(invalidData).send({ message: "Invalid ID" });
+        return next({ status: invalidData, message: "Invalid ID" });
       }
-      return res.status(serverError).send({ message: "Server error" });
+      return next({ status: serverError, message: "Server error" });
     });
 };
+//         return res.status(notFound).send({ message: "Item not found" });
+//       }
+//       if (!item.owner.equals(userId)) {
+//         return res.status(forbiddenError).send({ message: "Unauthorized" });
+//       }
+//       return ClothingItem.findByIdAndDelete(itemId).then((deletedItem) => {
+//         res.send({ data: deletedItem });
+//       });
+//     })
+//     .catch((err) => {
+//       if (err.name === "CastError") {
+//         return res.status(invalidData).send({ message: "Invalid ID" });
+//       }
+//       return res.status(serverError).send({ message: "Server error" });
+//     });
+// };
 
 const likeClothingItem = (req, res) => {
   ClothingItem.findByIdAndUpdate(

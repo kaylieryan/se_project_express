@@ -70,7 +70,7 @@ const login = (req, res) => {
     });
 };
 
-const getCurrentUser = (req, res) => {
+const getCurrentUser = (req, res, next) => {
   const { _id } = req.user;
 
   User.findOne({ _id })
@@ -82,15 +82,20 @@ const getCurrentUser = (req, res) => {
     })
     .catch((err) => {
       if (err.name === "DocumentNotFoundError") {
-        return res.status(notFound).send({ message: "Document not found" });
+        return next({ status: notFound, message: "Document not found" });
       }
-      return res
-        .status(serverError)
-        .send({ message: `There has been a server error ` });
+      return next({ status: serverError, message: "server error" });
     });
 };
+// return res.status(notFound).send({ message: "Document not found" });
+//       }
+//       return res
+//         .status(serverError)
+//         .send({ message: `There has been a server error ` });
+//     });
+// };
 
-const editCurrentUser = (req, res) => {
+const editCurrentUser = (req, res, next) => {
   const { name, avatar } = req.body;
   const { _id } = req.user;
   console.log("editCurrentUser controller", _id, avatar, name);
@@ -109,17 +114,28 @@ const editCurrentUser = (req, res) => {
     .catch((err) => {
       console.log(err);
       if (err.name === "ValidationError") {
-        return res.status(invalidData).send({ message: `data not valid` });
+        return next({ status: invalidData, message: "data not valid" });
       }
       if (err.name === "CastError") {
-        return res.status(invalidData).send({ message: "Invalid ID" });
+        return next({ status: invalidData, message: "Invalid ID" });
       }
       if (err.name === "DocumentNotFoundError") {
-        return res.status(notFound).send({ message: "Document not found" });
+        return next({ status: notFound, message: "Document not found" });
       }
-      return res.status(serverError).send({ message: "server error" });
+      return next({ status: serverError, message: "server error" });
     });
 };
+//         return res.status(invalidData).send({ message: `data not valid` });
+//       }
+//       if (err.name === "CastError") {
+//         return res.status(invalidData).send({ message: "Invalid ID" });
+//       }
+//       if (err.name === "DocumentNotFoundError") {
+//         return res.status(notFound).send({ message: "Document not found" });
+//       }
+//       return res.status(serverError).send({ message: "server error" });
+//     });
+// };
 
 module.exports = {
   createUser,
