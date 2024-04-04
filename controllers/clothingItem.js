@@ -13,11 +13,11 @@ function getClothingItems(req, res, next) {
       res.status(200).send(items);
     })
     .catch((err) => {
-      next(err);
+     next(err);
     });
-}
+};
 
-const createClothingItem = (req, res) => {
+const createClothingItem = (req, res, next) => {
   console.log("creating clothing item.");
   const { name, weather, imageUrl } = req.body;
   const owner = req.user._id;
@@ -36,9 +36,9 @@ const createClothingItem = (req, res) => {
     })
     .catch((err) => {
       if (err.name === "ValidationError") {
-        return res.status(invalidData).send({ message: "Invalid data" });
+        next({ status: invalidData, message: "Invalid data" });
       }
-      return res.status(serverError).send({ message: "Server error" });
+      next({ status: serverError, message: "Server error" });
     });
 };
 
