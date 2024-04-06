@@ -1,17 +1,22 @@
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const User = require("../models/user");
-const {
-  serverError,
-  invalidData,
-  notFound,
-  authError,
-  conflictError,
-} = require("../utils/errors");
+const { ConflictError } = require("../utils/ConflictError");
+const { BadRequestError } = require("../utils/BadRequestError");
+const { NotFoundError } = require("../utils/NotFoundError");
+const { UnauthorizedError } = require("../utils/UnauthorizedError");
+
+// const {
+//   serverError,
+//   invalidData,
+//   notFound,
+//   authError,
+//   conflictError,
+// } = require("../utils/errors");
 
 const { JWT_SECRET } = require("../utils/config");
 
-const createUser = (req, res) => {
+const createUser = (req, res, next) => {
   const { name, avatar, email, password } = req.body;
 
   bcrypt
@@ -27,30 +32,41 @@ const createUser = (req, res) => {
     .then((user) => {
       const updatedUser = user.toObject();
       delete updatedUser.password;
-
-      return res.send({ data: updatedUser });
+      res.status(200).send({ data: updatedUser });
+      // return res.send({ data: updatedUser });
     })
 
     .catch((err) => {
-      if (err.code === 11000 || err.message === "email already exists") {
-        return res
-          .status(conflictError)
-          .send({ message: "email already exists" });
+      if (err.name === "ValidationError") {
+        next(new BadRequestError(err.message));
+      } else if (err.code === 11000) {
+        next(new ConflictError("email already exists"));
+      } else {
+        next(err);
       }
-      if (err.name === "CastError") {
-        return res.status(invalidData).send({ message: "Invalid ID" });
-      }
-
-      if (err.name === "ValidationError" || err.message === "data not valid") {
-        return res.status(invalidData).send({ message: `data not valid` });
-      }
-      return res
-        .status(serverError)
-        .send({ message: `There has been a server error ` });
     });
 };
 
-const login = (req, res) => {
+//     .catch((err) => {
+//       if (err.code === 11000 || err.message === "email already exists") {
+//         return res
+//           .status(conflictError)
+//           .send({ message: "email already exists" });
+//       }
+//       if (err.name === "CastError") {
+//         return res.status(invalidData).send({ message: "Invalid ID" });
+//       }
+
+//       if (err.name === "ValidationError" || err.message === "data not valid") {
+//         return res.status(invalidData).send({ message: `data not valid` });
+//       }
+//       return res
+//         .status(serverError)
+//         .send({ message: `There has been a server error ` });
+//     });
+// };
+
+const login = (req, res, next) => {
   console.log("Calling login");
   console.log(req.body);
   User.findUserByCredentials(req.body.email, req.body.password)
@@ -60,15 +76,23 @@ const login = (req, res) => {
       });
       res.send({ token });
     })
-    .catch((error) => {
-      if (error.message === "incorrect email or password") {
-        console.log(error);
-        return res.status(authError).send({ message: "Invalid login" });
+    .catch((err) => {
+      if (err.name === "Incorrect email or password") {
+        next(new UnauthorizedError("Invalid login"));
+      } else {
+        next(err);
       }
-      console.log(error);
-      return res.status(serverError).send({ message: "server error" });
     });
 };
+//     .catch((error) => {
+//       if (error.message === "incorrect email or password") {
+//         console.log(error);
+//         return res.status(authError).send({ message: "Invalid login" });
+//       }
+//       console.log(error);
+//       return res.status(serverError).send({ message: "server error" });
+//     });
+// };
 
 const getCurrentUser = (req, res, next) => {
   const { _id } = req.user;
@@ -82,11 +106,19 @@ const getCurrentUser = (req, res, next) => {
     })
     .catch((err) => {
       if (err.name === "DocumentNotFoundError") {
-        return next({ status: notFound, message: "Document not found" });
+        next(new NotFoundError("User not found"));
+      } else {
+        next(err);
       }
-      return next({ status: serverError, message: "server error" });
     });
 };
+//     .catch((err) => {
+//       if (err.name === "DocumentNotFoundError") {
+//         return next({ status: notFound, message: "Document not found" });
+//       }
+//       return next({ status: serverError, message: "server error" });
+//     });
+// };
 // return res.status(notFound).send({ message: "Document not found" });
 //       }
 //       return res
@@ -112,19 +144,29 @@ const editCurrentUser = (req, res, next) => {
       return res.send({ data: user });
     })
     .catch((err) => {
-      console.log(err);
       if (err.name === "ValidationError") {
-        return next({ status: invalidData, message: "data not valid" });
+        next(new BadRequestError("Invalid data"));
+      } else if (err.name === "DocumentNotFoundError") {
+        next(new NotFoundError("User not found"));
+      } else {
+        next(err);
       }
-      if (err.name === "CastError") {
-        return next({ status: invalidData, message: "Invalid ID" });
-      }
-      if (err.name === "DocumentNotFoundError") {
-        return next({ status: notFound, message: "Document not found" });
-      }
-      return next({ status: serverError, message: "server error" });
     });
 };
+//     .catch((err) => {
+//       console.log(err);
+//       if (err.name === "ValidationError") {
+//         return next({ status: invalidData, message: "data not valid" });
+//       }
+//       if (err.name === "CastError") {
+//         return next({ status: invalidData, message: "Invalid ID" });
+//       }
+//       if (err.name === "DocumentNotFoundError") {
+//         return next({ status: notFound, message: "Document not found" });
+//       }
+//       return next({ status: serverError, message: "server error" });
+//     });
+// };
 //         return res.status(invalidData).send({ message: `data not valid` });
 //       }
 //       if (err.name === "CastError") {
