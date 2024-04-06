@@ -20,6 +20,7 @@ module.exports = {
     ecmaVersion: "latest",
   },
   rules: {
+    "no-unused-vars": ["error", { "argsIgnorePattern": "next" }],
     "no-underscore-dangle": ["error", { allow: ["_id"] }],
     "import/no-extraneous-dependencies": [
       "error",
