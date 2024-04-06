@@ -99,11 +99,13 @@ const getCurrentUser = (req, res, next) => {
 
   User.findOne({ _id })
     .then((user) => {
-      if (!user) {
-        return res.status(notFound).send({ message: "user not found" });
-      }
-      return res.send({ data: user });
+      res.send ({ data: user });
     })
+    //   if (!user) {
+    //     return res.status(notFound).send({ message: "user not found" });
+    //   }
+    //   return res.send({ data: user });
+    // })
     .catch((err) => {
       if (err.name === "DocumentNotFoundError") {
         next(new NotFoundError("User not found"));
@@ -139,7 +141,7 @@ const editCurrentUser = (req, res, next) => {
   )
     .then((user) => {
       if (!user) {
-        return res.status(notFound).send({ message: "user not found" });
+        return res.send({ message: "user not found" });
       }
       return res.send({ data: user });
     })
