@@ -2,15 +2,18 @@ const express = require("express");
 const mongoose = require("mongoose");
 const helmet = require("helmet");
 const cors = require("cors");
+const { errors } = require("celebrate");
 const limiter = require("./middlewares/rateLimiter");
 const { errorHandler } = require("./middlewares/errorHandler");
 
+const { PORT = 3001 } = process.env;
 const app = express();
 
-const { PORT = 3001 } = process.env;
 const { handleNonExistentRoute } = require("./utils/errors");
 
 const { login, createUser } = require("./controllers/user");
+
+app.use(cors());
 
 mongoose.connect(
   "mongodb://127.0.0.1:27017/wtwr_db",
@@ -20,12 +23,12 @@ mongoose.connect(
   (e) => console.log("db error", e)
 );
 
+const routes = require("./routes");
+
 app.use(helmet());
 app.use(express.json());
 
 app.use(limiter);
-
-app.use(cors());
 
 app.use("/users", require("./routes/user"));
 
@@ -36,6 +39,8 @@ app.post("/signup", createUser);
 
 app.use(handleNonExistentRoute);
 
+app.use(routes);
+app.use(errors());
 app.use(errorHandler);
 
 app.listen(PORT, () => {
