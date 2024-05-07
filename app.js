@@ -6,6 +6,8 @@ const { errors } = require("celebrate");
 const limiter = require("./middlewares/rateLimiter");
 const { errorHandler } = require("./middlewares/errorHandler");
 
+const { requestLogger, errorLogger } = require("./middlewares/logger");
+
 const { PORT = 3001 } = process.env;
 const app = express();
 
@@ -22,11 +24,11 @@ mongoose.connect(
   },
   (e) => console.log("db error", e)
 );
-
 const routes = require("./routes");
 
 app.use(helmet());
 app.use(express.json());
+app.use(requestLogger);
 
 app.use(limiter);
 
@@ -40,6 +42,7 @@ app.post("/signup", createUser);
 app.use(handleNonExistentRoute);
 
 app.use(routes);
+app.use(errorLogger);
 app.use(errors());
 app.use(errorHandler);
 
