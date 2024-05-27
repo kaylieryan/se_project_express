@@ -2,6 +2,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const helmet = require("helmet");
 const cors = require("cors");
+require("dotenv").config();
 const { errors } = require("celebrate");
 const limiter = require("./middlewares/rateLimiter");
 const { errorHandler } = require("./middlewares/errorHandler");
