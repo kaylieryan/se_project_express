@@ -70,7 +70,7 @@ const validateLogin = celebrate({
 
 const validateDeleteItem = celebrate({
   params: Joi.object().keys({
-    userId: Joi.string().hex().length(24),
+    itemId: Joi.string().hex().length(24),
   }),
 });
 
@@ -78,7 +78,7 @@ const validateDeleteItem = celebrate({
 
 const validateDislikeItem = celebrate({
   params: Joi.object().keys({
-    userId: Joi.string().hex().length(24),
+    itemId: Joi.string().hex().length(24),
   }),
 });
 
@@ -86,7 +86,7 @@ const validateDislikeItem = celebrate({
 
 const validateLikeItem = celebrate({
   params: Joi.object().keys({
-    userId: Joi.string().hex().length(24),
+    itemId: Joi.string().hex().length(24),
   }),
 });
 
@@ -94,7 +94,7 @@ const validateLikeItem = celebrate({
 
 const validateGetCurrentUser = celebrate({
   params: Joi.object().keys({
-    userId: Joi.string().hex().length(24),
+    itemId: Joi.string().hex().length(24),
   }),
 });
 
