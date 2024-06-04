@@ -31,26 +31,6 @@ const createClothingItem = (req, res, next) => {
     });
 };
 
-//   if (!name || !weather || !imageUrl) {
-//     return res.status(invalidData).send({ message: "Invalid data" });
-//   }
-
-//   if (typeof name !== "string" || typeof weather !== "string") {
-//     return res.status(invalidData).send({ message: "Invalid data" });
-//   }
-
-//   return ClothingItem.create({ name, weather, imageUrl, owner })
-//     .then((item) => {
-//       res.status(200).send({ data: item });
-//     })
-//     .catch((err) => {
-//       if (err.name === "ValidationError") {
-//         next({ status: invalidData, message: "Invalid data" });
-//       }
-//       next(err);
-//     });
-// };
-
 const deleteClothingItem = (req, res, next) => {
   const userId = req.user._id;
   const { itemId } = req.params;
@@ -76,26 +56,6 @@ const deleteClothingItem = (req, res, next) => {
     });
 };
 
-//   return ClothingItem.findById(itemId)
-//     .then((item) => {
-//       if (!item) {
-//         return next({ status: notFound, message: "Item not found" });
-//       }
-//       if (!item.owner.equals(userId)) {
-//         return next({ status: forbiddenError, message: "Unauthorized" });
-//       }
-//       return ClothingItem.findByIdAndDelete(itemId).then((deletedItem) => {
-//         res.send({ data: deletedItem });
-//       });
-//     })
-//     .catch((err) => {
-//       if (err.name === "CastError") {
-//         return next({ status: invalidData, message: "Invalid ID" });
-//       }
-//       return next({ status: serverError, message: "Server error" });
-//     });
-// };
-
 const likeClothingItem = (req, res, next) => {
   ClothingItem.findByIdAndUpdate(
     req.params.itemId,
@@ -117,22 +77,6 @@ const likeClothingItem = (req, res, next) => {
       next(err);
     });
 };
-//       if (err.name === "ValidationError") {
-//         return res
-//           .status(invalidData)
-//           .send({ message: `this data is not valid` });
-//       }
-//       if (err.name === "CastError") {
-//         return res.status(invalidData).send({ message: "Invalid ID" });
-//       }
-//       if (err.name === "DocumentNotFoundError") {
-//         return res.status(notFound).send({ message: "Document not found" });
-//       }
-//       return res
-//         .status(serverError)
-//         .send({ message: `There has been a server error` });
-//     });
-// };
 
 const unlikeClothingItem = (req, res, next) => {
   ClothingItem.findByIdAndUpdate(
@@ -155,17 +99,6 @@ const unlikeClothingItem = (req, res, next) => {
       next(err);
     });
 };
-//       if (err.name === "CastError") {
-//         return res.status(invalidData).send({ message: "Invalid ID" });
-//       }
-//       if (err.name === "DocumentNotFoundError") {
-//         return res.status(notFound).send({ message: "Document not found" });
-//       }
-//       return res
-//         .status(serverError)
-//         .send({ message: `There has been a server error: ${err.message} ` });
-//     });
-// };
 
 module.exports = {
   getClothingItems,
