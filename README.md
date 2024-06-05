@@ -16,11 +16,16 @@ The project is built using Node.js and Express.js. The project is currently in t
 
 ## Project Goals
  The ultimate goal is to create a server with an API and user authorization. 
+
 ## Running the Project
 `npm run start` — to launch the server 
 `npm run dev` — to launch the server with the hot reload feature
 
 ## Link to the Front-End Project Repository
 - https://github.com/kaylieryan/se_project_react
+
+## Project Domain
+- https://wtwr.verymad.net
+
 
 
