@@ -12,10 +12,6 @@ const { requestLogger, errorLogger } = require("./middlewares/logger");
 const { PORT = 3001 } = process.env;
 const app = express();
 
-const { handleNonExistentRoute } = require("./utils/errors");
-
-const { login, createUser } = require("./controllers/user");
-
 app.use(cors());
 
 mongoose.connect(
@@ -33,20 +29,11 @@ app.use(requestLogger);
 
 app.use(limiter);
 
-app.use("/users", require("./routes/user"));
-
-app.use("/items", require("./routes/clothingItem"));
-
 app.get("/crash-test", () => {
   setTimeout(() => {
     throw new Error("Server will crash now");
   }, 0);
 });
-
-app.post("/signin", login);
-app.post("/signup", createUser);
-
-app.use(handleNonExistentRoute);
 
 app.use(routes);
 app.use(errorLogger);

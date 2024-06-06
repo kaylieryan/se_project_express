@@ -1,7 +1,7 @@
 const ClothingItem = require("../models/clothingItem");
-const { BadRequestError } = require("../utils/errors");
-const { ForbiddenError } = require("../utils/errors");
-const { NotFoundError } = require("../utils/errors");
+const BadRequestError = require("../utils/BadRequestError");
+const ForbiddenError = require("../utils/ForbiddenError");
+const NotFoundError = require("../utils/NotFoundError");
 
 function getClothingItems(req, res, next) {
   console.log("getting clothing items.");
@@ -38,7 +38,7 @@ const deleteClothingItem = (req, res, next) => {
   ClothingItem.findById(itemId)
     .orFail()
     .then((item) => {
-      if (String(item.owner) !== String(userId) && !req.user.isAdmin) {
+      if (String(item.owner) !== String(userId)) {
         throw new ForbiddenError("Forbidden Access");
       }
       ClothingItem.findByIdAndDelete(itemId).then(() => {
@@ -65,11 +65,10 @@ const likeClothingItem = (req, res, next) => {
     .orFail()
     .then((clothingItem) => {
       res.status(200).send({ data: clothingItem });
-      // res.send({ data: clothingItem });
     })
     .catch((err) => {
       if (err.name === `DocumentNotFoundError`) {
-        next(new NotFoundError());
+        next(new NotFoundError("Item not found"));
       }
       if (err.name === `CastError`) {
         next(new BadRequestError("Invalid data"));
@@ -87,11 +86,10 @@ const unlikeClothingItem = (req, res, next) => {
     .orFail()
     .then((clothingItem) => {
       res.status(200).send({ data: clothingItem });
-      // res.send({ data: clothingItem });
     })
     .catch((err) => {
       if (err.name === `DocumentNotFoundError`) {
-        next(new NotFoundError());
+        next(new NotFoundError("Item not found"));
       }
       if (err.name === `CastError`) {
         next(new BadRequestError("Invalid data"));

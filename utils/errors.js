@@ -5,14 +5,7 @@ const authError = 401;
 const forbiddenError = 403;
 const conflictError = 409;
 
-function handleNonExistentRoute(req, res) {
-  res.status(notFound).send({
-    message: "Requested resource not found",
-  });
-}
-
 module.exports = {
-  handleNonExistentRoute,
   notFound,
   serverError,
   invalidData,
